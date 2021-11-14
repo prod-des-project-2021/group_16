@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ChessWebAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20211114120314_InitialCreate")]
+    [Migration("20211114195119_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
