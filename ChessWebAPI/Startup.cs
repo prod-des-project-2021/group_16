@@ -1,3 +1,6 @@
+using ChessWeb.DAL;
+using ChessWebAPI.MapperProfiles;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -37,6 +40,15 @@ namespace ChessWebAPI
             services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("db")));
 
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(options => {
+                    options.LoginPath = "/signin";
+                });
+
+            services.AddAutoMapper(typeof(SignUpProfile));
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -52,6 +64,8 @@ namespace ChessWebAPI
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            app.UseAuthentication();
 
             app.UseAuthorization();
 
