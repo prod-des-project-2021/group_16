@@ -4,9 +4,9 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace ChessWebAPI.DTOs
+namespace ChessWeb.Shared.DTOs
 {
-    public class LoginDTO
+    public class SignInDTO
     {
         [Required(ErrorMessage = "Username field is required")]
         public string Username { get; set; }

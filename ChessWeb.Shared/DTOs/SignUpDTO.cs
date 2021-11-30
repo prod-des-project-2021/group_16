@@ -1,11 +1,7 @@
 ﻿using ChessWeb.Shared.CustomValidations;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace ChessWebAPI.DTOs
+namespace ChessWeb.Shared.DTOs
 {
     public class SignUpDTO
     {
@@ -23,5 +19,10 @@ namespace ChessWebAPI.DTOs
             "Minimum length is 8 characters")]
         [DataType(DataType.Password)]
         public string Password { get; set; }
+
+        [Required(ErrorMessage = "Confirm password field is required")]
+        [DataType(DataType.Password)]
+        [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
+        public string ConfirmPassword { get; set; }
     }
 }
