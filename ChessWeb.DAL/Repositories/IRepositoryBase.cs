@@ -11,7 +11,7 @@ namespace ChessWeb.DAL.Repositories
         IEnumerable<T> GetAll();
         IEnumerable<T> GetByCondition(Expression<Func<T, bool>> predicate);
         T GetById(Guid id);
-        EntityEntry<T> Create(T entity);
+        void Create(T entity);
         void Delete(Guid id);
     }
 }

@@ -18,9 +18,9 @@ namespace ChessWeb.DAL.Repositories
             _dbSet = dbContext.Set<T>();
         }
 
-        public virtual EntityEntry<T> Create(T entity)
+        public virtual void Create(T entity)
         {
-            return _dbSet.Add(entity);
+            _dbSet.Add(entity);
         }
 
         public virtual void Delete(Guid id)
