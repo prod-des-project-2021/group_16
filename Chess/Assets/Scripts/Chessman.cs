@@ -202,19 +202,19 @@ public class Chessman : MonoBehaviour
         if (sc.GetPosition(5, 0) == null && sc.GetPosition(6, 0) == null)
         {
             MovePlateSpawn(6, 0);
-            GameObject cp = sc.GetPosition(7, 0);
+            //  GameObject cp = controller.GetComponent<Game>().GetPosition(7, 0);
             MovePlateSpawn(5, 0);
         }
 
         if (sc.GetPosition(1, 0) == null && sc.GetPosition(2, 0) == null && sc.GetPosition(3, 0) == null)
         {
             MovePlateSpawn(2, 0);
-            GameObject cp = sc.GetPosition(0, 0);
-           /* if (cp.GetComponent<Chessman>().Sprite == white_rook)
-            { 
-                MovePlateSpawn(2, 0);
-            }
-           */
+            /*    GameObject cp = sc.GetPosition(0, 0);
+              if (cp.GetComponent<Chessman>().Sprite == white_rook)
+               { 
+                   MovePlateSpawn(2, 0);
+               }
+              */
         }
     }
 
@@ -264,9 +264,18 @@ public class Chessman : MonoBehaviour
         Game sc = controller.GetComponent<Game>();
         if (sc.PositionOnBoard(x, y))
         {
-            if (sc.GetPosition(x, y) == sc.GetPosition(x, 3) && sc.GetPosition(x, y) == null && sc.GetPosition(x, y - 1) == null && sc.GetPosition(x, 1).GetComponent<Chessman>().player == "white")
+            if (sc.GetPosition(x, 1).GetComponent<Chessman>().player == "white")
             {
-                MovePlateSpawn(x, y);
+                if (sc.GetPosition(x, y - 1) == null)
+                {
+                    if (sc.GetPosition(x, y) == null)
+                    {
+                        if (sc.GetPosition(x, y) == sc.GetPosition(x, 3))
+                        {
+                            MovePlateSpawn(x, y);
+                        }
+                    }
+                }
             }
         }
     }
@@ -276,9 +285,18 @@ public class Chessman : MonoBehaviour
         Game sc = controller.GetComponent<Game>();
         if (sc.PositionOnBoard(x, y))
         {
-            if (sc.GetPosition(x, y) == sc.GetPosition(x, 4) && sc.GetPosition(x, y) == null && sc.GetPosition(x, y + 1) == null && sc.GetPosition(x, 6).GetComponent<Chessman>().player == "black")
+            if (sc.GetPosition(x, 6).GetComponent<Chessman>().player == "black")
             {
-                MovePlateSpawn(x, y);
+                if (sc.GetPosition(x, y + 1) == null)
+                {
+                    if (sc.GetPosition(x, y) == null)
+                    {
+                        if (sc.GetPosition(x, y) == sc.GetPosition(x, 4))
+                        {
+                            MovePlateSpawn(x, y);
+                        }
+                    }
+                }
             }
         }
     }
