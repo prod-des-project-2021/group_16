@@ -2,25 +2,43 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using System.Threading.Tasks;
 
 namespace ChessWebClient.Services
 {
     public class GameService : IGameService
     {
-        public Guid CreateGame(CreateGameDTO game)
+        private readonly HttpClient _httpClient;
+        public GameService(HttpClient httpClient)
         {
-            throw new NotImplementedException();
+            _httpClient = httpClient;
         }
 
-        public DetailGameDTO GetDetailGame(Guid id)
+        public async Task<List<AllGamesDTO>> GetGamesOverview()
         {
-            throw new NotImplementedException();
+            return await _httpClient.GetFromJsonAsync<List<AllGamesDTO>>("/games");
         }
 
-        public IEnumerable<AllGamesDTO> GetGamesOverview()
+        public async Task<string> CreateGame(CreateGameDTO game)
         {
-            throw new NotImplementedException();
+            var result = await _httpClient.PostAsJsonAsync("/games", game);
+            return result.Headers.Location.ToString();
+            
+        }
+
+        public async Task<DetailGameDTO> GetDetailGame(Guid id)
+        {
+            try
+            {
+                return await _httpClient.GetFromJsonAsync<DetailGameDTO>($"/games/{id}");
+            }
+            catch (HttpRequestException)
+            {
+                return null;
+            }
         }
     }
 }

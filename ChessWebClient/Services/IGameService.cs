@@ -8,9 +8,9 @@ namespace ChessWebClient.Services
 {
     public interface IGameService
     {
-        public IEnumerable<AllGamesDTO> GetGamesOverview();
-        public DetailGameDTO GetDetailGame(Guid id);
-        public Guid CreateGame(CreateGameDTO game);
+        Task <List<AllGamesDTO>> GetGamesOverview();
+        Task<DetailGameDTO> GetDetailGame(Guid id);
+        Task<string> CreateGame(CreateGameDTO game);
 
     }
 }
