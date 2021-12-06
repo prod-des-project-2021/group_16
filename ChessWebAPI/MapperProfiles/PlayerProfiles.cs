@@ -13,9 +13,12 @@ namespace ChessWebAPI.MapperProfiles
         public PlayerProfiles()
         {
             CreateMap<Player, DetailPlayerDTO>()
-                .ForMember(dst => dst.Games, opt => opt.MapFrom(map => map.FirstPlayerGames.Concat(map.SecondPlayerGames) ));
+                .ForMember(dst => dst.PlayerId, opt => opt.MapFrom(map => map.Id))
+                .ForMember(dst => dst.Games, opt => opt.MapFrom(map => map.FirstPlayerGames.Concat(map.SecondPlayerGames)));
             
-            CreateMap<Player, AllPlayersDTO>();
+            CreateMap<Player, AllPlayersDTO>()
+                .ForMember(dst => dst.PlayerId, opt => opt.MapFrom(map => map.Id));
+
         }
     }
 }

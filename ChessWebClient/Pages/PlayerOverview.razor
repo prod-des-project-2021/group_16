@@ -1,0 +1,28 @@
+﻿@page "/players" 
+
+<h3>Players overview</h3>
+
+@if (_players == null)
+{
+    <Spinner/>
+}
+else
+{ 
+
+}
+
+
+@code {
+
+    private List<AllPlayersDTO> _players { get; set; }
+
+    [Inject]
+    public IPlayerService PlayerService { get; set; }
+
+    protected async override Task OnInitializedAsync()
+    {
+        _players = await PlayerService.GetPlayersOverview();
+
+        await base.OnInitializedAsync();
+    }
+}

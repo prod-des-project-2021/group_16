@@ -21,7 +21,7 @@ namespace ChessWebClient
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
             builder.RootComponents.Add<App>("#app");
 
-            builder.Services.AddHttpClient<IGameService, GameService>(client =>
+            /*builder.Services.AddHttpClient<IGameService, GameService>(client =>
             {
                 client.BaseAddress = new Uri(("https://localhost:44363"));
             });
@@ -29,15 +29,17 @@ namespace ChessWebClient
             builder.Services.AddHttpClient<IAuthenticationService, AuthenticationService>(client =>
             {
                 client.BaseAddress = new Uri(("https://localhost:44363"));
-            });
+            });*/
 
-            //builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:44363") });
+            builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:44363") });
 
 
             builder.Services.AddBlazoredLocalStorage();
             builder.Services.AddAuthorizationCore();
             builder.Services.AddScoped<AuthenticationStateProvider, TokenAuthStateProvider>();
-            //builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+            builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+            builder.Services.AddScoped<IGameService, GameService>();
+            builder.Services.AddScoped<IPlayerService, PlayerService>();
 
             await builder.Build().RunAsync();
         }

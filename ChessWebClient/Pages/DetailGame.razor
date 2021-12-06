@@ -1,0 +1,37 @@
+﻿@page "/games/{GameId:guid}"
+
+<h3>Game detail</h3>
+
+@if (_gameInDetail == null)
+{
+    <Spinner/>
+}
+else
+{
+    <p>Game ID: @_gameInDetail.GameId</p>
+    <p>Date of the game: @_gameInDetail.Date</p>
+    <p>Duration of the game: @_gameInDetail.Duration</p>
+    <p>Moves played: @_gameInDetail.Moves</p>
+    <p>First player name: @_gameInDetail.FirstPlayer.Username</p>
+    <p>Second player name:@_gameInDetail.SecondPlayer.Username</p>
+}
+
+
+
+@code {
+
+    private DetailGameDTO _gameInDetail { get; set; }
+
+    [Inject]
+    public IGameService GameSerivce { get; set; }
+
+    [Parameter]
+    public Guid GameId { get; set; }
+
+    protected async override Task OnParametersSetAsync()
+    {
+        _gameInDetail = await GameSerivce.GetDetailGame(GameId);
+
+        await base.OnParametersSetAsync();
+    }
+}

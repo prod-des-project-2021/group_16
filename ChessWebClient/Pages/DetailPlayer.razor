@@ -1,0 +1,31 @@
+﻿@page "/players/{PlayerId:guid}" 
+
+<h3>Player in detail</h3>
+
+@if (_playerInDetail == null)
+{
+    <Spinner/>
+}
+else
+{ 
+
+}
+
+@code {
+
+    private DetailPlayerDTO _playerInDetail { get; set; }
+
+    [Parameter]
+    public Guid PlayerId { get; set; }
+
+    [Inject]
+    public IPlayerService PlayerService { get; set; }
+
+    protected async override Task OnParametersSetAsync()
+    {
+        _playerInDetail = await PlayerService.GetDetailPlayer(PlayerId);
+
+        await base.OnParametersSetAsync();
+    }
+
+}

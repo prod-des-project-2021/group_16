@@ -2,14 +2,9 @@
 using ChessWeb.DAL.Models;
 using ChessWeb.Shared.DTOs;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
 
 namespace ChessWebAPI.Controllers
 {
@@ -28,7 +23,6 @@ namespace ChessWebAPI.Controllers
         [HttpGet]
         public ActionResult<IEnumerable<AllGamesDTO>> GetGamesOverview()
         {
-            //var id = HttpContext.User.Claims.First(x => x.Type == ClaimTypes.NameIdentifier).Value;
             return Ok(_mapper.Map<IEnumerable<AllGamesDTO>>(_unitOfWork.Game.GetAll()));
         }
 
@@ -54,18 +48,18 @@ namespace ChessWebAPI.Controllers
         public ActionResult<Guid> CreateGame(CreateGameDTO game)
         {
             var newGame = _mapper.Map<Game>(game);
-            
+
             string path = $@".\Moves\{Guid.NewGuid()}.txt";
-            newGame.PathToMovesFile = path; 
-            
+            newGame.PathToMovesFile = path;
+
             _unitOfWork.Game.Create(newGame);
 
-            System.IO.File.WriteAllText(path, game.Moves);	
-            
+            System.IO.File.WriteAllText(path, game.Moves);
+
             _unitOfWork.Complete();
 
             return CreatedAtAction(nameof(GetDetailGame), new { id = newGame.GameId },
-                new { id = newGame.GameId});
+                new { id = newGame.GameId });
 
         }
     }
