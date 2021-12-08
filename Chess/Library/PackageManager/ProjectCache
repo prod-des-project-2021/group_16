@@ -5,16 +5,16 @@ m_ProjectFiles:
     m_ContentTrackingEnabled: 1
     m_ModificationDate:
       serializedVersion: 2
-      ticks: 637737693100562129
-    m_Hash: 381648332
+      ticks: 637744683709437372
+    m_Hash: 3094118354
   m_LockFileStatus:
     m_FilePath: C:/Users/Leon/OneDrive - stud.h-da.de/H_Da/Semester_4_Oulu/PDaI/group_16/Chess/Packages/packages-lock.json
     m_PathExists: 1
     m_ContentTrackingEnabled: 1
     m_ModificationDate:
       serializedVersion: 2
-      ticks: 637737693635071266
-    m_Hash: 3765647734
+      ticks: 637744683709442387
+    m_Hash: 1986868904
 m_EmbeddedPackageManifests:
   m_ManifestsStatus: {}
 m_PackageAssets:
