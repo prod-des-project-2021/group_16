@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace ChessWebClient.Services
@@ -22,11 +23,18 @@ namespace ChessWebClient.Services
             return await _httpClient.GetFromJsonAsync<List<AllGamesDTO>>("/games");
         }
 
-        public async Task<string> CreateGame(CreateGameDTO game)
+        public async Task<Guid?> CreateGame(CreateGameDTO game)
         {
             var result = await _httpClient.PostAsJsonAsync("/games", game);
-            return result.Headers.Location.ToString();
-            
+
+            if (result.IsSuccessStatusCode == false)
+            {
+                return null;
+            }
+
+            var content =  await result.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<Dictionary<string,Guid>>(content)["id"];
+
         }
 
         public async Task<DetailGameDTO> GetDetailGame(Guid id)

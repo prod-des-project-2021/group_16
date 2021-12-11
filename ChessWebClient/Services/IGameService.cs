@@ -10,7 +10,7 @@ namespace ChessWebClient.Services
     {
         Task <List<AllGamesDTO>> GetGamesOverview();
         Task<DetailGameDTO> GetDetailGame(Guid id);
-        Task<string> CreateGame(CreateGameDTO game);
+        Task<Guid?> CreateGame(CreateGameDTO game);
 
     }
 }

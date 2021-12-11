@@ -43,7 +43,6 @@ namespace ChessWebAPI.Controllers
 
         }
 
-        [Authorize]
         [HttpPost]
         public ActionResult<Guid> CreateGame(CreateGameDTO game)
         {

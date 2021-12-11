@@ -16,14 +16,14 @@
 
     public async Task SaveGame()
     {
-        _newGame.Duration = "Duration";
+        _newGame.Duration = "AAAAAA";
         _newGame.Moves = "Moves";
         _newGame.FirstPlayerId = new Guid("a66419d2-afc7-444d-13a6-08d9b3149b18");
         _newGame.SecondPlayerId = new Guid("a66419d2-afc7-444d-13a6-08d9b3149b18");
 
-        var createdGameURL = await GameService.CreateGame(_newGame);
-        //NavManager.NavigateTo(createdGameURL);
-        NavManager.NavigateTo("/");
+        var createdGameId = await GameService.CreateGame(_newGame);
+        NavManager.NavigateTo($"games/{createdGameId}");
+        //NavManager.NavigateTo("/");
     }
 
 }
