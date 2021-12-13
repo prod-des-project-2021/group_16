@@ -1,4 +1,6 @@
 ﻿@page "/games/{GameId:guid}"
+@inject IJSRuntime JSRuntime
+@inject IGameService GameService
 
 <h3>Game detail</h3>
 
@@ -12,26 +14,98 @@ else
     <p>Date of the game: @_gameInDetail.Date</p>
     <p>Duration of the game: @_gameInDetail.Duration</p>
     <p>Moves played: @_gameInDetail.Moves</p>
-    <p>First player name: @_gameInDetail.FirstPlayer.Username</p>
-    <p>Second player name:@_gameInDetail.SecondPlayer.Username</p>
 }
-
-
+<div id="board" style="width: 500px"></div>
+<div class="row">
+    <button class="btn btn-primary" disabled=@DisableButtonBackward @onclick="PreviousMove">Previous move</button>
+    <button class="btn btn-primary" disabled=@DisableButtonForward @onclick="NextMove">Next move</button>
+</div>
 
 @code {
 
     private DetailGameDTO _gameInDetail { get; set; }
 
-    [Inject]
-    public IGameService GameSerivce { get; set; }
 
     [Parameter]
     public Guid GameId { get; set; }
 
+    public IJSObjectReference JSGameModule { get; set; }
+
+    public IJSObjectReference ChessBoard { get; set; }
+
+    public string[] MovesInSANotation { get; set; }
+
+    public int movePointer { get; set; } = 0;
+
+    public bool lastMoveForward { get; set; }
+
+    public bool DisableButtonForward { get; set; }
+
+    public bool DisableButtonBackward { get; set; }
+
     protected async override Task OnParametersSetAsync()
     {
-        _gameInDetail = await GameSerivce.GetDetailGame(GameId);
+        _gameInDetail = await GameService.GetDetailGame(GameId);
+
+        MovesInSANotation = _gameInDetail.Moves.Split(":");
+
+        DisableButtonBackward = true;
+
+        if (MovesInSANotation.Length == 0)
+        {
+            DisableButtonForward = true;
+        }
 
         await base.OnParametersSetAsync();
     }
+
+    protected async override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            JSGameModule = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/game.js");
+            ChessBoard = await JSGameModule.InvokeAsync<IJSObjectReference>("createChessBoardReplay", "board");
+        }
+    }
+
+
+    public async Task NextMove()
+    {
+        if (lastMoveForward == true)
+        {
+            movePointer++;
+        }
+
+        string piecesPositioning = await JSGameModule.InvokeAsync<string>("makeMove", MovesInSANotation[movePointer]);
+        await ChessBoard.InvokeVoidAsync("position", piecesPositioning);
+
+        lastMoveForward = true;
+        DisableButtonBackward = false;
+
+        if (movePointer == MovesInSANotation.Length - 1)
+        {
+            DisableButtonForward = true;
+        }
+
+    }
+
+    public async Task PreviousMove()
+    {
+        if (lastMoveForward == false)
+        {
+            movePointer--;
+        }
+
+        string piecesPositioning = await JSGameModule.InvokeAsync<string>("undoMove");
+        await ChessBoard.InvokeVoidAsync("position", piecesPositioning);
+
+        lastMoveForward = false;
+        DisableButtonForward = false;
+
+        if (movePointer == 0)
+        {
+            DisableButtonBackward = true;
+        }
+    }
+
 }

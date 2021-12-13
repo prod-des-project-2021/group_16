@@ -12,5 +12,7 @@ namespace ChessWeb.Shared.DTOs
         public string Moves { get; set; }
         public Guid? FirstPlayerId { get; set; }
         public Guid? SecondPlayerId { get; set; }
+        public Guid? WhitePiecesPlayer { get; set; }
+        public Guid? Winner { get; set; }
     }
 }

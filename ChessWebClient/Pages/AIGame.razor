@@ -1,0 +1,128 @@
+﻿@page "/games/ai"
+@inject IGameService GameService
+@inject NavigationManager NavManager
+@inject IJSRuntime JSRuntime
+@inject AuthenticationStateProvider AuthStateProvider
+@implements IDisposable
+@using System.Threading
+
+
+<p>@elapsedTime</p>
+
+@if (GameStarted == false)
+{
+    <button class="btn btn-primary" @onclick="ChangeOrientation">Change orientation</button>
+    <button class="btn btn-primary" @onclick="StartGame">Start</button>
+}
+<button class="btn btn-primary" @onclick="RestartGame">Restart the game</button>
+
+<div id="playBoard" style="width: 500px"></div>
+
+
+@code {
+
+    private CreateGameDTO _newGame { get; set; } = new CreateGameDTO();
+
+    private DotNetObjectReference<AIGame> dotNetObjRef;
+
+    public IJSObjectReference JSGameModule { get; set; }
+
+    public IJSObjectReference ChessBoard { get; set; }
+
+    public Guid? createdGameId { get; set; }
+
+    public string Orientation { get; set; }
+
+    public bool GameStarted { get; set; } = false;
+
+    public DateTime startTime { get; set; }
+
+    public Timer timer { get; set; }
+
+    public string elapsedTime { get; set; }
+
+
+    public async Task StartGame()
+    {
+
+        Orientation = await ChessBoard.InvokeAsync<string>("orientation");
+
+        if (Orientation == "black")
+        {
+            await JSGameModule.InvokeVoidAsync("makeRandomMove");
+        }
+
+        startTime = DateTime.Now;
+        timer = new Timer(async _ =>
+        {
+            elapsedTime = (DateTime.Now - startTime).ToString(@"hh\:mm\:ss");
+            await InvokeAsync(StateHasChanged);
+
+        }, null, 0, 1000);
+
+        GameStarted = true;
+    }
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            JSGameModule = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/game.js");
+
+            dotNetObjRef = DotNetObjectReference.Create(this);
+            ChessBoard = await JSGameModule.InvokeAsync<IJSObjectReference>("createChessBoardPlay",
+                "playBoard", dotNetObjRef);
+        }
+    }
+
+    public async Task RestartGame() => await JSGameModule.InvokeVoidAsync("restartGame");
+
+    public async Task ChangeOrientation() => await ChessBoard.InvokeVoidAsync("flip");
+
+
+    [JSInvokable]
+    public async Task GameOver(bool computerIsWinner)
+    {
+
+        timer.Dispose();
+
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+
+        if (authState.User.Identity.IsAuthenticated == false)
+        {
+            return;
+        }
+
+
+        var userId = authState.User.FindFirst(x => x.Type == ClaimTypes.NameIdentifier).Value;
+
+        var movesMade = await JSGameModule.InvokeAsync<string[]>("getGameHistory");
+        _newGame.Moves = string.Join(":", movesMade);
+
+        if (Orientation == "white")
+        {
+            _newGame.WhitePiecesPlayer = new Guid(userId);
+        }
+
+        if (computerIsWinner is false)
+        {
+            _newGame.Winner = new Guid(userId);
+        }
+
+
+        _newGame.FirstPlayerId = new Guid(userId);
+        _newGame.Duration = elapsedTime;
+
+        createdGameId = await GameService.CreateGame(_newGame);
+
+    }
+
+
+    public void Dispose()
+    {
+        dotNetObjRef?.Dispose();
+        timer?.Dispose();
+    }
+
+}
