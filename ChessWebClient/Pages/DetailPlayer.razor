@@ -1,5 +1,6 @@
 ﻿@page "/players/{PlayerId:guid}" 
 
+<header>Header</header>
 <h3>Player in detail</h3>
 
 @if (_playerInDetail == null)
@@ -8,8 +9,27 @@
 }
 else
 { 
-
+    <p>Username: @_playerInDetail.Username</p>
+    <p>Email: @_playerInDetail.EmailAddress</p>
+    foreach (var game in _playerInDetail.Games)
+    {
+        if(game.Winner == PlayerId)
+        {
+            <p>Game won</p>
+            if (game.WhitePiecesPlayer == PlayerId)
+            {
+                <p>White side</p>
+            }
+            else
+            {
+                <p>Black side</p>
+            }
+        }
+        <hr/>
+    }
 }
+
+<footer>Footer</footer>
 
 @code {
 
