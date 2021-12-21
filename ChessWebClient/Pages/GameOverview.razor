@@ -17,7 +17,7 @@ else
                         <p class="card-text">Color of pieces:
                         @(context.FirstPlayer.PlayerId == context.WhitePiecesPlayer ? "White": "Black")</p>
                         <p class="card-text">Date of the game: @context.Date</p>
-                        <p class="card-text">Duration of the game: @context.Duration</p>
+                        <p class="card-text">Duration: @context.Duration</p>
                         <div class="text-center">
                             <a href="/games/@context.GameId" class="btn btn-primary">View detail</a>
                         </div>
