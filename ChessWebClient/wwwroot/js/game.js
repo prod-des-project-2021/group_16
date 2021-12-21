@@ -1,8 +1,9 @@
 ﻿var game = null
 var chessBoard = null
 var dotNetReference = null
-var minimaxDepth = 3
+var minimaxDepth = 2
 var piecesPath = 'images/chesspieces/{piece}.png'
+var gameStarted = false
 
 var $board = null
 var game = new Chess()
@@ -47,6 +48,10 @@ export function createChessBoardReplay(boardId) {
 
 function onDragStartHandler(source, piece, position, orientation) {
 
+	if (gameStarted === false) {
+		return false
+	}
+
     if (game.game_over()) {
         return false
     }
@@ -56,7 +61,7 @@ function onDragStartHandler(source, piece, position, orientation) {
         return false
     }
 
-    if (orientation === 'black') {
+	if (orientation === 'black') {
         $board.find('.square-' + source).addClass('highlight-black')
     }
 }
@@ -77,7 +82,7 @@ function onDropHandler(source, target) {
             $board.find('.square-' + target).removeClass('highlight-black')
         }
         return 'snapback'
-    }
+	}
 
     if (game.turn() === 'b') {
         $board.find('.' + squareClass).removeClass('highlight-white')
@@ -90,12 +95,22 @@ function onDropHandler(source, target) {
         $board.find('.square-' + target).addClass('highlight-black')
 	}
 
-
-    /*var history_arr = game.history()
-    console.log(history_arr[history_arr.length - 1])
-    console.log('1')*/ //TODO
+	dotNetReference.invokeMethod("ChangeTurn")
+	reportMovesStatus()
 
     window.setTimeout(makeBestMove, 200)
+}
+
+function reportMovesStatus() {
+
+	var history_arr = game.history()
+	var was_white_turn = false
+
+	if (game.turn() == 'b') {
+		was_white_turn = true
+	}
+
+	dotNetReference.invokeMethod("UpdateMoves", was_white_turn, history_arr[history_arr.length - 1])
 }
 
 function onMoveEndHandler() {
@@ -119,12 +134,9 @@ function onDragMoveHandler(newLocation, oldLocation, source,
         $board.find('.square-' + newLocation).addClass('highlight-black')
     }
 }
-
 export function makeBestMove() {
 
 	var moveToMake = calculateBestMove()
-
-	console.log(moveToMake)
 
 	if (moveToMake === null) {
         dotNetReference.invokeMethodAsync("GameOver", false)
@@ -144,16 +156,36 @@ export function makeBestMove() {
     }
 
     game.move(moveToMake)
-    chessBoard.position(game.fen())
+	chessBoard.position(game.fen())
 
-    if (game.game_over()) {
-        dotNetReference.invokeMethodAsync("GameOver", true)
-    }
+	reportMovesStatus()
+
+	if (game.game_over()) {
+		dotNetReference.invokeMethodAsync("GameOver", true)
+	}
+	else {
+		dotNetReference.invokeMethod("ChangeTurn")
+	}
 }
 
 export function restartGame() {
-    chessBoard.position('start')
-    game = new Chess()
+	chessBoard.position('start')
+
+	squareToHighlight = null
+	colorToHighlight = null
+	$board.find('.' + squareClass).removeClass('highlight-white')
+	$board.find('.' + squareClass).removeClass('highlight-black')
+
+	gameStarted = false
+	game = new Chess()
+}
+
+export function startTheGame() {
+	gameStarted = true
+}
+
+export function changeDifficulty(difficulty) {
+	minimaxDepth = difficulty
 }
 
 export function makeMove(position) {

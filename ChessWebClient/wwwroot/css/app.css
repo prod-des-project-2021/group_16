@@ -67,13 +67,19 @@ h1 {
     border: 2px solid #000000
 }
 
-.highlight-white {
-    box-shadow: inset 0 0 3px 3px yellow;
+
+
+.borderino {
+    border-radius: 15px;
+    border: 2px solid #000000;
+    padding: 10px
 }
 
-.highlight-black {
-    box-shadow: inset 0 0 3px 3px blue;
-}
+    .borderino p {
+        font-size: 14px;
+        font-weight: bold;
+    }
+
 
 /************* END *************/
 
