@@ -1,0 +1,141 @@
+﻿@page "/players/{PlayerId:guid}"
+@inject IPlayerService PlayerService
+@inject IGameService GameService
+
+<style>
+    .right {
+        height: 100%;
+        border-left: 4px solid #C9CFD3;
+        margin-left: 50%;
+    }
+
+    .game-card {
+        border-radius: 10px;
+        border: 2px solid #000000;
+        margin: 10px;
+    }
+
+    .user-info {
+        margin-top: 160px;
+    }
+
+        .user-info p {
+            font-size: 18px;
+            font-weight: bold;
+        }
+</style>
+
+@if (_playerInDetail == null && PlayerIsLoading)
+{
+    <Spinner />
+}
+else if (_playerInDetail == null)
+{
+    <div class="text-center mt-5">
+        <p>Player not found!</p>
+    </div>
+}
+else
+{
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col user-info" style="position: fixed">
+                <p>Username: @_playerInDetail.Username</p>
+                <p>Email: @_playerInDetail.EmailAddress</p>
+                <p>Total games played: @GameCount</p>
+                <p>Total wins: @Wins</p>
+                <p>Total losses: @(GameCount-Wins)</p>
+                <p>WinRate: @(GameCount != 0 ? (int)(((double)Wins/GameCount) * 100) : 0)%</p>
+                <p>White side wins: @WhiteWins</p>
+                <p>Black side wins: @(Wins - WhiteWins)</p>
+            </div>
+            @if (GameCount != 0)
+            {
+                <div class="col right text-center">
+                    <ItemList ListItems="_games" ItemType="AllGamesDTO">
+                        <ItemTemplate>
+                            <div class="row game-card align-items-center
+                             @(PlayerId == context.Winner ? "winner" : "loser")">
+                                <div class="col pl-3 pt-3">
+                                    <p>Color of pieces: @(PlayerId == context.WhitePiecesPlayer ? "White" : "Black")</p>
+                                    <p>Date: @context.Date</p>
+                                    <p>Duration: @context.Duration</p>
+                                </div>
+                                <div class="col text-center">
+                                    <a href="/games/@context.GameId" class="btn btn-primary mb-1">View detail</a>
+                                    <br />
+                                    <AuthorizeView>
+                                        <Authorized Context="authContext">
+                                            @if (authContext.User.FindFirst(x => x.Type == ClaimTypes.NameIdentifier).Value == PlayerId.ToString())
+                                            {
+                                                <button class="btn badge-danger mt-1" @onclick="() => DeleteGame(context.GameId)">Delete game</button>
+                                            }
+                                        </Authorized>
+                                    </AuthorizeView>
+                                </div>
+                            </div>
+                        </ItemTemplate>
+                    </ItemList>
+                </div>
+            }
+
+            else
+            {
+                <div class="col text-center" style="margin-top: 30px">
+                    <p style="font-size: 20px">No games played yet!</p>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+
+@code {
+
+    private DetailPlayerDTO _playerInDetail { get; set; }
+
+    private List<AllGamesDTO> _games { get; set; }
+
+    [Parameter]
+    public Guid PlayerId { get; set; }
+
+    public bool PlayerIsLoading { get; set; } = true;
+
+    public int GameCount { get; set; }
+
+    public int Wins { get; set; }
+
+    public int WhiteWins { get; set; }
+
+    public void CalculateStatistics()
+    {
+        GameCount = _games.Count();
+
+        var wonGames = _playerInDetail.Games.Where(x => _playerInDetail.PlayerId == x.Winner);
+
+        Wins = wonGames.Count();
+        WhiteWins = wonGames.Where(x => _playerInDetail.PlayerId == x.WhitePiecesPlayer).Count();
+    }
+
+    protected async override Task OnParametersSetAsync()
+    {
+        _playerInDetail = await PlayerService.GetDetailPlayer(PlayerId);
+
+        if (_playerInDetail != null)
+        {
+            _games = _playerInDetail.Games;
+            CalculateStatistics();
+        }
+
+        PlayerIsLoading = false;
+
+        await base.OnParametersSetAsync();
+    }
+
+    public async Task DeleteGame(Guid gameId)
+    {
+        await GameService.DeleteGame(gameId);
+        _games.Remove(_games.Single(x => x.GameId == gameId));
+        CalculateStatistics();
+    }
+}

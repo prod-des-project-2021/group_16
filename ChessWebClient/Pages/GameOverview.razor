@@ -1,0 +1,46 @@
+﻿@page "/games"
+
+@if (_games == null)
+{
+    <Spinner />
+}
+else
+{
+    <div class="d-flex flex-column">
+        <ItemList ListItems="_games" ItemType="AllGamesDTO">
+            <ItemTemplate>
+                <div class="card mx-auto">
+                    <img class="card-img-top" src="/images/black-and-white-chess.png" alt="chess-img"
+                         style="height: 12rem; background-color: antiquewhite">
+                    <div class="card-body @(context.FirstPlayer.PlayerId == context.Winner ? "winner" : "loser")">
+                        <p class="card-text">Player's name: @context.FirstPlayer.Username</p>
+                        <p class="card-text">Color of pieces:
+                        @(context.FirstPlayer.PlayerId == context.WhitePiecesPlayer ? "White": "Black")</p>
+                        <p class="card-text">Date of the game: @context.Date</p>
+                        <p class="card-text">Duration: @context.Duration</p>
+                        <div class="text-center">
+                            <a href="/games/@context.GameId" class="btn btn-primary">View detail</a>
+                        </div>
+                    </div>
+                </div>
+            </ItemTemplate>
+        </ItemList>
+    </div>
+}
+
+
+@code
+{
+    private List<AllGamesDTO> _games { get; set; }
+
+    public string result = "winner";
+
+    [Inject]
+    public IGameService GameService { get; set; }
+
+    protected async override Task OnInitializedAsync()
+    {
+        _games = await GameService.GetGamesOverview();
+        await base.OnInitializedAsync();
+    }
+}

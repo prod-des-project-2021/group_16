@@ -30,6 +30,59 @@ a, .btn-link {
     color: red;
 }
 
+/*********** CUSTOM CSS *************/
+
+h1 {
+    text-align: center;
+    font-weight: normal;
+    border-bottom: 1px solid #000000;
+    margin-top: 30px;
+}
+
+.top-menu {
+    margin-bottom: 50px;
+}
+
+.winner {
+    background-color: #79C5F7;
+}
+
+.loser {
+    background-color: #F5B3A4;
+}
+
+.card-body {
+    border-top: 1px solid #000000;
+}
+
+.card-text {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.card {
+    margin-bottom: 10px;
+    margin-top: 10px;
+    width: 30%;
+    border: 2px solid #000000
+}
+
+
+
+.borderino {
+    border-radius: 15px;
+    border: 2px solid #000000;
+    padding: 10px
+}
+
+    .borderino p {
+        font-size: 14px;
+        font-weight: bold;
+    }
+
+
+/************* END *************/
+
 #blazor-error-ui {
     background: lightyellow;
     bottom: 0;

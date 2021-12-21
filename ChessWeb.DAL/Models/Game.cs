@@ -18,5 +18,7 @@ namespace ChessWeb.DAL.Models
         public Player FirstPlayer { get; set; }
         public Guid? SecondPlayerId { get; set; }
         public Player SecondPlayer { get; set; }
+        public Guid? WhitePiecesPlayer { get; set; }
+        public Guid? Winner { get; set; }
     }
 }

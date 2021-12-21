@@ -1,0 +1,309 @@
+﻿@page "/games/ai"
+@inject IGameService GameService
+@inject NavigationManager NavManager
+@inject IJSRuntime JSRuntime
+@inject AuthenticationStateProvider AuthStateProvider
+@implements IDisposable
+@using System.Threading
+
+
+<style>
+    .highlight-white {
+        box-shadow: inset 0 0 3px 3px yellow;
+    }
+
+    .highlight-black {
+        box-shadow: inset 0 0 3px 3px blue;
+    }
+
+    tr.white-moves td {
+        border: solid 1px black;
+        padding: 3px;
+        width: 4em;
+        text-align: center;
+    }
+
+    tr.black-moves td {
+        background-color: black;
+        color: white;
+        padding: 3px;
+        width: 4em;
+        text-align: center;
+    }
+
+    table {
+        border-spacing: 2px;
+        border-collapse: separate;
+    }
+
+    p {
+        font-size: 22px;
+        font-weight: bold
+    }
+</style>
+
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        @if (GameStarted == false)
+        {
+            <button class="btn btn-primary mr-2 mb-3" @onclick="ChangeOrientation">Change orientation</button>
+            <div class="dropdown mb-3">
+                <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    @GameDifficulty
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    <a class="dropdown-item" @onclick="@(async() => await ChangeDifficulty("Easy"))">Easy</a>
+                    <a class="dropdown-item" @onclick="@(async () => await ChangeDifficulty("Medium"))">Medium</a>
+                    <a class="dropdown-item" @onclick="@(async () => await ChangeDifficulty("Hard"))">Hard</a>
+                </div>
+            </div>
+            <button class="btn btn-primary ml-2 mb-3" @onclick="StartGame">Start the game</button>
+        }
+        else
+        {
+            <div class="col text-center">
+                <button class="btn btn-primary" @onclick="RestartGame">Restart the game</button>
+                <p class="mt-2">@Turn</p>
+            </div>
+        }
+    </div>
+
+    <div class="row align-items-center justify-content-center">
+        <div class="col text-center">
+            <p>@LeftSidePlayer</p>
+            <table>
+                @for (int i = 0; i < WhiteMoves.Count;)
+                {
+                    <tr class="white-moves">
+                        @for (int k = i; i - k != 4 && i < WhiteMoves.Count; i++)
+                        {
+                            <td class="tex">@WhiteMoves[i]</td>
+                        }
+                    </tr>
+                }
+            </table>
+        </div>
+        <div class="col">
+            <div class="mx-auto" id="playBoard" style="width:500px"></div>
+        </div>
+        <div class="col text-center">
+            <p>@RightSidePlayer</p>
+            <table>
+                @for (int i = 0; i < BlackMoves.Count;)
+                {
+                    <tr class="black-moves">
+                        @for (int k = i; i - k != 4 && i < BlackMoves.Count; i++)
+                        {
+                            <td>@BlackMoves[i]</td>
+                        }
+                    </tr>
+                }
+            </table>
+        </div>
+    </div>
+    <div class="text-center mt-2">
+        <p>@elapsedTime</p>
+    </div>
+</div>
+
+@code {
+
+    private CreateGameDTO _newGame { get; set; } = new CreateGameDTO();
+
+    private DotNetObjectReference<AIGame> dotNetObjRef;
+
+    public IJSObjectReference JSGameModule { get; set; }
+
+    public IJSObjectReference ChessBoard { get; set; }
+
+    public Guid? createdGameId { get; set; }
+
+    public string Orientation { get; set; }
+
+    public bool GameStarted { get; set; } = false;
+
+    public DateTime startTime { get; set; }
+
+    public Timer timer { get; set; }
+
+    public string elapsedTime { get; set; } = "00:00:00";
+
+    public string GameDifficulty { get; set; } = "Medium";
+
+    public string Turn { get; set; }
+
+    public List<string> WhiteMoves { get; set; } = new();
+
+    public List<string> BlackMoves { get; set; } = new();
+
+    public string LeftSidePlayer { get; set; }
+
+    public string RightSidePlayer { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        LeftSidePlayer = await GetPlayerName() + "'s moves";
+        RightSidePlayer = "Computer's moves";
+    }
+
+    public async Task StartGame()
+    {
+
+        Orientation = await ChessBoard.InvokeAsync<string>("orientation");
+
+        if (Orientation == "black")
+        {
+            Turn = "Computer's turn!";
+            await JSGameModule.InvokeVoidAsync("makeBestMove");
+        }
+        else
+        {
+            Turn = "Your turn!";
+        }
+
+
+        startTime = DateTime.Now;
+        timer = new Timer(async _ =>
+        {
+            elapsedTime = (DateTime.Now - startTime).ToString(@"hh\:mm\:ss");
+            await InvokeAsync(StateHasChanged);
+
+        }, null, 0, 1000);
+
+        await JSGameModule.InvokeVoidAsync("startTheGame");
+        GameStarted = true;
+    }
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            JSGameModule = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/game.js");
+
+            dotNetObjRef = DotNetObjectReference.Create(this);
+            ChessBoard = await JSGameModule.InvokeAsync<IJSObjectReference>("createChessBoardPlay",
+                "playBoard", dotNetObjRef);
+        }
+    }
+
+    public async Task RestartGame()
+    {
+
+        await JSGameModule.InvokeVoidAsync("restartGame");
+        elapsedTime = "00:00:00";
+
+        timer?.Dispose();
+        timer = null;
+
+        BlackMoves.Clear();
+        WhiteMoves.Clear();
+        GameStarted = false;
+    }
+
+    public async Task ChangeOrientation()
+    {
+        await ChessBoard.InvokeVoidAsync("flip");
+
+        string temp = LeftSidePlayer;
+        LeftSidePlayer = RightSidePlayer;
+        RightSidePlayer = temp;
+
+    }
+
+
+    [JSInvokable]
+    public async Task GameOver(bool computerIsWinner)
+    {
+
+        Turn = "Game over!";
+        StateHasChanged();
+
+        timer.Dispose();
+        timer = null;
+
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+
+        if (authState.User.Identity.IsAuthenticated == false)
+        {
+            return;
+        }
+
+
+        var userId = authState.User.FindFirst(x => x.Type == ClaimTypes.NameIdentifier).Value;
+
+        var movesMade = await JSGameModule.InvokeAsync<string[]>("getGameHistory");
+        _newGame.Moves = string.Join(":", movesMade);
+
+        if (Orientation == "white")
+        {
+            _newGame.WhitePiecesPlayer = new Guid(userId);
+        }
+
+        if (computerIsWinner is false)
+        {
+            _newGame.Winner = new Guid(userId);
+        }
+
+
+        _newGame.FirstPlayerId = new Guid(userId);
+        _newGame.Duration = elapsedTime;
+
+        createdGameId = await GameService.CreateGame(_newGame);
+
+    }
+
+    [JSInvokable]
+    public void ChangeTurn()
+    {
+        Turn = (Turn == "Your turn!" ? "Computer's turn!" : "Your turn!");
+        StateHasChanged();
+    }
+
+    [JSInvokable]
+    public void UpdateMoves(bool whitesTurn, string move)
+    {
+        if (whitesTurn)
+        {
+            WhiteMoves.Add(move);
+        }
+        else
+        {
+            BlackMoves.Add(move);
+        }
+
+        StateHasChanged();
+    }
+
+    public async Task ChangeDifficulty(string difficulty)
+    {
+        GameDifficulty = difficulty;
+
+
+        await JSGameModule.InvokeVoidAsync("changeDifficulty",
+            difficulty == "Easy" ? 1 : difficulty == "Medium" ? 2 : 3);
+    }
+
+    public async Task<string> GetPlayerName()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+
+        string username = "Unknown";
+
+        if (authState.User.Identity.IsAuthenticated)
+        {
+            username = authState.User.FindFirst(x => x.Type == ClaimTypes.Name).Value;
+        }
+
+        return username;
+
+    }
+
+    public void Dispose()
+    {
+        dotNetObjRef?.Dispose();
+        timer?.Dispose();
+    }
+
+}

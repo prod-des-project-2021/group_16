@@ -1,0 +1,20 @@
+﻿@typeparam ItemType
+
+    <Virtualize Items="ListItems" Context="item" TItem="ItemType">
+        @ItemTemplate(item)
+    </Virtualize>
+
+
+@code {
+    [Parameter]
+    public ICollection<ItemType> ListItems { get; set; } = new List<ItemType>();
+
+    [Parameter]
+    public RenderFragment<ItemType> ItemTemplate { get; set; }
+
+    /*  [Parameter]
+      public EventCallback<TItem> DeleteEvent { get; set; }
+
+      [Parameter]
+      public EventCallback<TItem> SelectEvent { get; set; } */
+}
