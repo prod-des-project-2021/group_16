@@ -48,5 +48,10 @@ namespace ChessWebClient.Services
                 return null;
             }
         }
+
+        public async Task DeleteGame(Guid id)
+        {
+            await _httpClient.DeleteAsync($"/games/{id}");
+        }
     }
 }

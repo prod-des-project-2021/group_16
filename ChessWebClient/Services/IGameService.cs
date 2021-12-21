@@ -11,6 +11,7 @@ namespace ChessWebClient.Services
         Task <List<AllGamesDTO>> GetGamesOverview();
         Task<DetailGameDTO> GetDetailGame(Guid id);
         Task<Guid?> CreateGame(CreateGameDTO game);
+        Task DeleteGame(Guid id);
 
     }
 }

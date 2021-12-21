@@ -61,5 +61,25 @@ namespace ChessWebAPI.Controllers
                 new { id = newGame.GameId });
 
         }
+
+        [HttpDelete("{id:Guid}")]
+        public IActionResult DeleteGame(Guid id)
+        {
+            var game = _unitOfWork.Game.GetById(id);
+            
+            if (game is null)
+            {
+                return NotFound();
+            }
+
+            System.IO.File.Delete(game.PathToMovesFile);
+
+            _unitOfWork.Game.Delete(id);
+
+            _unitOfWork.Complete();
+
+            return Ok();
+        
+        }
     }
 }

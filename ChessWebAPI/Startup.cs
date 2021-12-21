@@ -108,8 +108,6 @@ namespace ChessWebAPI
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
-                endpoints.MapHub<ChessGameHub>("/testhub");
-
             });
         }
     }
